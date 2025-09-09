@@ -1,5 +1,3 @@
-//delete everything here and write our own
-
 package org.firstinspires.ftc.teamcode;
 
 import androidx.annotation.NonNull;
