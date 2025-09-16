@@ -1,6 +1,13 @@
+
 package org.firstinspires.ftc.teamcode;
+
+
+import androidx.annotation.NonNull;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Rotation2d;
+import com.acmerobotics.roadrunner.ftc.DownsampledWriter;
 import com.acmerobotics.roadrunner.ftc.Encoder;
 import com.acmerobotics.roadrunner.ftc.FlightRecorder;
 import com.acmerobotics.roadrunner.ftc.LazyHardwareMapImu;
@@ -23,10 +30,14 @@ import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.messages.DriveCommandMessage;
+import org.firstinspires.ftc.teamcode.messages.PoseMessage;
 
 import java.lang.Math;
 import java.util.LinkedList;
+import java.util.List;
 
+@Config
 public final class Mecanum
 {
     public static class params
@@ -39,11 +50,16 @@ public final class Mecanum
         public static double lateralInPerTick = ticksToInch;
         public static double trackWidthTicks = 0;
 
-        public static double speed = 0, velocity = 0, acceleration = 0;
+        public static double speed, velocity, acceleration = 0;
         public static double maxWheelVel = 50, minProfileAccel = -30, maxProfileAccel = 50;
         public double maxAngVel = Math.PI, maxAngAccel = Math.PI;
 
+        public double axialGain , lateralGain, headingGain = 0.0;
+        public double axialVelGain, lateralVelGain, headingVelGain = 0.0;
+
     }
+
+    public static Mecanum.params params = new Mecanum.params();
 
     public Mecanum(HardwareMap hardwareMap, Localizer localizer)
     {
@@ -61,14 +77,23 @@ public final class Mecanum
     public Localizer localizer;
     public LazyImu lazyImu;
 
+    private final DownsampledWriter estimatedPoseWriter = new DownsampledWriter("ESTIMATED_POSE", 50_000_000);
+    private final DownsampledWriter targetPoseWriter = new DownsampledWriter("TARGET_POSE", 50_000_000);
+    private final DownsampledWriter driveCommandWriter = new DownsampledWriter("DRIVE_COMMAND", 50_000_000);
+    private final DownsampledWriter mecanumCommandWriter = new DownsampledWriter("MECANUM_COMMAND", 50_000_000);
+
     public Pose2d pose;
     public final LinkedList<Pose2d> poseHistory = new LinkedList<Pose2d>();
 
-    public final MecanumKinematics kinematics = new MecanumKinematics(
-            params.ticksToInch * params.trackWidthTicks, params.ticksToInch / params.lateralInPerTick);
+    public final MecanumKinematics kinematics = new MecanumKinematics
+    (
+        params.ticksToInch * params.trackWidthTicks,
+    params.ticksToInch / params.lateralInPerTick
+    );
 
 
-    public class DriveLocalize implements Localizer {
+    public class DriveLocalize implements Localizer
+    {
         public final Encoder frontLeft, frontRight, backLeft, backRight;
         public final IMU imu;
 
@@ -77,7 +102,8 @@ public final class Mecanum
         private boolean initialized;
         private Pose2d pose;
 
-        public DriveLocalize(Pose2d pose) {
+        public DriveLocalize(Pose2d pose)
+        {
             frontLeft = new OverflowEncoder(new RawEncoder(Mecanum.this.frontLeft));
             frontRight = new OverflowEncoder(new RawEncoder(Mecanum.this.frontRight));
             backLeft = new OverflowEncoder(new RawEncoder(Mecanum.this.backLeft));
@@ -87,15 +113,13 @@ public final class Mecanum
             this.pose = pose;
         }
 
-        public void setPose(Pose2d pose)
-        {
-            this.pose = pose;
-        }
+        @Override
+        public void setPose(Pose2d pose) {this.pose = pose;}
 
-        public Pose2d getPose(Pose2d pose) {
-            return pose;
-        }
+        @Override
+        public Pose2d getPose() {return pose;}
 
+        @Override
         public PoseVelocity2d update()
         {
             PositionVelocityPair frontLeftPosVel = frontLeft.getPositionAndVelocity();
@@ -169,10 +193,105 @@ public final class Mecanum
 
         localizer = new Mecanum.DriveLocalize(pose);
 
-        FlightRecorder.write("MECANUM_PARAMS", PARAMS);
+        FlightRecorder.write("MECANUM_PARAMS", params);
     }
 
+    public void setDrivePowers(PoseVelocity2d powers)
+    {
+        MecanumKinematics.WheelVelocities<Time> wheelVels = new MecanumKinematics(1).inverse(
+                PoseVelocity2dDual.constant(powers, 1));
 
+        double maxPowerMag = 1;
+        for (DualNum<Time> power : wheelVels.all()) {
+            maxPowerMag = Math.max(maxPowerMag, power.value());
+        }
 
+        frontLeft.setPower(wheelVels.leftFront.get(0) / maxPowerMag);
+        frontRight.setPower(wheelVels.rightFront.get(0) / maxPowerMag);
+        backLeft.setPower(wheelVels.leftBack.get(0) / maxPowerMag);
+        backRight.setPower(wheelVels.rightBack.get(0) / maxPowerMag);
+    }
+
+    public final class FollowTrajectoryAction implements Action
+    {
+        public final TimeTrajectory timeTrajectory;
+        private double beginTs;
+
+        private final double[] xPoints, yPoints;
+
+        public FollowTrajectoryAction(TimeTrajectory t)
+        {
+            timeTrajectory = t;
+
+            List<Double> disps = com.acmerobotics.roadrunner.Math.range
+            (
+                0, t.path.length(),
+                Math.max(2, (int) Math.ceil(t.path.length() / 2))
+            );
+
+            xPoints = new double[disps.size()];
+            yPoints = new double[disps.size()];
+
+            for (int i = 0; i < disps.size(); i++)
+            {
+                Pose2d p = t.path.get(disps.get(i), 1).value();
+                xPoints[i] = p.position.x;
+                yPoints[i] = p.position.y;
+            }
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket p)
+        {
+            double t;
+
+            if(beginTs < 0)
+            {
+                beginTs = Actions.now();
+                t = 0;
+            } else {
+                t = Actions.now() - beginTs;
+            }
+
+            if(t >= timeTrajectory.duration)
+            {
+                frontLeft.setPower(0);
+                frontRight.setPower(0);
+                backLeft.setPower(0);
+                backRight.setPower(0);
+
+                return false;
+            }
+
+            Pose2dDual<Time> txWorldTarget = timeTrajectory.get(t);
+            targetPoseWriter.write(new PoseMessage(txWorldTarget.value()));
+
+            PoseVelocity2d robotVelRobot = updatePoseEstimate();
+
+            PoseVelocity2dDual<Time> command = new HolonomicController
+            (
+                params.axialGain, params.lateralGain, params.headingGain,
+                params.axialVelGain, params.lateralVelGain, params.headingVelGain
+            ).compute(txWorldTarget, localizer.getPose(), robotVelRobot);
+
+            driveCommandWriter.write(new DriveCommandMessage(command));
+
+            return true;
+        }
+
+        public PoseVelocity2d updatePoseEstimate()
+        {
+            PoseVelocity2d vel = localizer.update();
+            poseHistory.add(localizer.getPose());
+
+            while (poseHistory.size() > 100)
+            {
+                poseHistory.removeFirst();
+            }
+
+            estimatedPoseWriter.write(new PoseMessage(localizer.getPose()));
+
+            return vel;
+        }
+    }
 }
-

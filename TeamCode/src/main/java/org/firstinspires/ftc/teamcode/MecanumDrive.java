@@ -444,7 +444,7 @@ public final class MecanumDrive {
         @Override
         public void preview(Canvas c) {
             c.setStroke("#7C4DFF7A");
-            c.fillCircle(turn.beginPose.position.x, turn.beginPose.position.y, 2);
+        c.fillCircle(turn.beginPose.position.x, turn.beginPose.position.y, 2);
         }
     }
 
