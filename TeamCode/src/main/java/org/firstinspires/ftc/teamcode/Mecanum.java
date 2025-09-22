@@ -50,12 +50,11 @@ public final class Mecanum
 
         public double kS, kV, kA = 0;
 
-        public double tickPerRev = 8192, wheelID = 38, gearRatio = 1;
+        public double tickPerRev = 8192, wheelID = 38; //gearRatio = 1;
         public double ticksToInch = (tickPerRev/(wheelID * Math.PI) * 0.041);
         public double lateralInPerTick = ticksToInch;
         public double trackWidthTicks = 0;
 
-        public double speed, velocity, acceleration = 0;
         public double maxWheelVel = 50, minProfileAccel = -30, maxProfileAccel = 50;
         public double maxAngVel = Math.PI, maxAngAccel = Math.PI;
 
@@ -226,28 +225,25 @@ public final class Mecanum
         backRight.setPower(wheelVels.rightBack.get(0) / maxPowerMag);
     }
 
-    public final class FollowTrajectoryAction implements Action
-    {
+    public final class FollowTrajectoryAction implements Action {
         public final TimeTrajectory timeTrajectory;
         private double beginTs;
 
         private final double[] xPoints, yPoints;
 
-        public FollowTrajectoryAction(TimeTrajectory t)
-        {
+        public FollowTrajectoryAction(TimeTrajectory t) {
             timeTrajectory = t;
 
             List<Double> disps = com.acmerobotics.roadrunner.Math.range
-            (
-                0, t.path.length(),
-                Math.max(2, (int) Math.ceil(t.path.length() / 2))
-            );
+                    (
+                            0, t.path.length(),
+                            Math.max(2, (int) Math.ceil(t.path.length() / 2))
+                    );
 
             xPoints = new double[disps.size()];
             yPoints = new double[disps.size()];
 
-            for (int i = 0; i < disps.size(); i++)
-            {
+            for (int i = 0; i < disps.size(); i++) {
                 Pose2d p = t.path.get(disps.get(i), 1).value();
                 xPoints[i] = p.position.x;
                 yPoints[i] = p.position.y;
@@ -255,20 +251,17 @@ public final class Mecanum
         }
 
         @Override
-        public boolean run(@NonNull TelemetryPacket p)
-        {
+        public boolean run(@NonNull TelemetryPacket p) {
             double t;
 
-            if(beginTs < 0)
-            {
+            if (beginTs < 0) {
                 beginTs = Actions.now();
                 t = 0;
             } else {
                 t = Actions.now() - beginTs;
             }
 
-            if(t >= timeTrajectory.duration)
-            {
+            if (t >= timeTrajectory.duration) {
                 frontLeft.setPower(0);
                 frontRight.setPower(0);
                 backLeft.setPower(0);
@@ -283,10 +276,10 @@ public final class Mecanum
             PoseVelocity2d robotVelRobot = updatePoseEstimate();
 
             PoseVelocity2dDual<Time> command = new HolonomicController
-            (
-                params.axialGain, params.lateralGain, params.headingGain,
-                params.axialVelGain, params.lateralVelGain, params.headingVelGain
-            ).compute(txWorldTarget, localizer.getPose(), robotVelRobot);
+                    (
+                            params.axialGain, params.lateralGain, params.headingGain,
+                            params.axialVelGain, params.lateralVelGain, params.headingVelGain
+                    ).compute(txWorldTarget, localizer.getPose(), robotVelRobot);
 
             driveCommandWriter.write(new DriveCommandMessage(command));
 
@@ -330,102 +323,88 @@ public final class Mecanum
 
             return true;
         }
+    }
 
-        public final class TurnAction implements Action {
-            private final TimeTurn turn;
+    public final class TurnAction implements Action
+    {
+        private final TimeTurn turn;
 
-            private double beginTs = -1;
+        private double beginTs = -1;
 
-            public TurnAction(TimeTurn turn) {
-                this.turn = turn;
-            }
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket p) {
-                double t;
-                if (beginTs < 0) {
-                    beginTs = Actions.now();
-                    t = 0;
-                } else {
-                    t = Actions.now() - beginTs;
-                }
-
-                if (t >= turn.duration) {
-                    frontLeft.setPower(0);
-                    frontRight.setPower(0);
-                    backLeft.setPower(0);
-                    backRight.setPower(0);
-
-                    return false;
-                }
-
-                Pose2dDual<Time> txWorldTarget = turn.get(t);
-                targetPoseWriter.write(new PoseMessage(txWorldTarget.value()));
-
-                PoseVelocity2d robotVelRobot = updatePoseEstimate();
-
-                PoseVelocity2dDual<Time> command = new HolonomicController(
-                        params.axialGain, params.lateralGain, params.headingGain,
-                        params.axialVelGain, params.lateralVelGain, params.headingVelGain
-                )
-                        .compute(txWorldTarget, localizer.getPose(), robotVelRobot);
-                driveCommandWriter.write(new DriveCommandMessage(command));
-
-                MecanumKinematics.WheelVelocities<Time> wheelVels = kinematics.inverse(command);
-                double voltage = voltageSensor.getVoltage();
-                final MotorFeedforward feedforward = new MotorFeedforward(params.kS,
-                        params.kV / params.ticksToInch, params.kA / params.ticksToInch);
-                double leftFrontPower = feedforward.compute(wheelVels.leftFront) / voltage;
-                double leftBackPower = feedforward.compute(wheelVels.leftBack) / voltage;
-                double rightBackPower = feedforward.compute(wheelVels.rightBack) / voltage;
-                double rightFrontPower = feedforward.compute(wheelVels.rightFront) / voltage;
-                mecanumCommandWriter.write(new MecanumCommandMessage(
-                        voltage, leftFrontPower, leftBackPower, rightBackPower, rightFrontPower
-                ));
-
-                frontLeft.setPower(feedforward.compute(wheelVels.leftFront) / voltage);
-                frontRight.setPower(feedforward.compute(wheelVels.rightFront) / voltage);
-                backLeft.setPower(feedforward.compute(wheelVels.leftBack) / voltage);
-                backRight.setPower(feedforward.compute(wheelVels.rightBack) / voltage);
-
-                Canvas c = p.fieldOverlay();
-                drawPoseHistory(c);
-
-                c.setStroke("#4CAF50");
-                Drawing.drawRobot(c, txWorldTarget.value());
-
-                c.setStroke("#3F51B5");
-                Drawing.drawRobot(c, localizer.getPose());
-
-                c.setStroke("#7C4DFFFF");
-                c.fillCircle(turn.beginPose.position.x, turn.beginPose.position.y, 2);
-
-                return true;
-            }
+        public TurnAction(TimeTurn turn) {
+            this.turn = turn;
         }
 
-        public PoseVelocity2d updatePoseEstimate()
-        {
-            PoseVelocity2d vel = localizer.update();
-            poseHistory.add(localizer.getPose());
-
-            while (poseHistory.size() > 100)
-            {
-                poseHistory.removeFirst();
+        @Override
+        public boolean run(@NonNull TelemetryPacket p) {
+            double t;
+            if (beginTs < 0) {
+                beginTs = Actions.now();
+                t = 0;
+            } else {
+                t = Actions.now() - beginTs;
             }
 
-            estimatedPoseWriter.write(new PoseMessage(localizer.getPose()));
+            if (t >= turn.duration) {
+                frontLeft.setPower(0);
+                frontRight.setPower(0);
+                backLeft.setPower(0);
+                backRight.setPower(0);
 
-            return vel;
+                return false;
+            }
+
+            Pose2dDual<Time> txWorldTarget = turn.get(t);
+            targetPoseWriter.write(new PoseMessage(txWorldTarget.value()));
+
+            PoseVelocity2d robotVelRobot = updatePoseEstimate();
+
+            PoseVelocity2dDual<Time> command = new HolonomicController(
+                    params.axialGain, params.lateralGain, params.headingGain,
+                    params.axialVelGain, params.lateralVelGain, params.headingVelGain
+            )
+                    .compute(txWorldTarget, localizer.getPose(), robotVelRobot);
+            driveCommandWriter.write(new DriveCommandMessage(command));
+
+            MecanumKinematics.WheelVelocities<Time> wheelVels = kinematics.inverse(command);
+            double voltage = voltageSensor.getVoltage();
+            final MotorFeedforward feedforward = new MotorFeedforward(params.kS,
+                    params.kV / params.ticksToInch, params.kA / params.ticksToInch);
+            double leftFrontPower = feedforward.compute(wheelVels.leftFront) / voltage;
+            double leftBackPower = feedforward.compute(wheelVels.leftBack) / voltage;
+            double rightBackPower = feedforward.compute(wheelVels.rightBack) / voltage;
+            double rightFrontPower = feedforward.compute(wheelVels.rightFront) / voltage;
+            mecanumCommandWriter.write(new MecanumCommandMessage(
+                    voltage, leftFrontPower, leftBackPower, rightBackPower, rightFrontPower
+            ));
+
+            frontLeft.setPower(feedforward.compute(wheelVels.leftFront) / voltage);
+            frontRight.setPower(feedforward.compute(wheelVels.rightFront) / voltage);
+            backLeft.setPower(feedforward.compute(wheelVels.leftBack) / voltage);
+            backRight.setPower(feedforward.compute(wheelVels.rightBack) / voltage);
+
+            Canvas c = p.fieldOverlay();
+            drawPoseHistory(c);
+
+            c.setStroke("#4CAF50");
+            Drawing.drawRobot(c, txWorldTarget.value());
+
+            c.setStroke("#3F51B5");
+            Drawing.drawRobot(c, localizer.getPose());
+
+            c.setStroke("#7C4DFFFF");
+            c.fillCircle(turn.beginPose.position.x, turn.beginPose.position.y, 2);
+
+            return true;
         }
 
         @Override
         public void preview(Canvas c)
         {
-            c.setStroke("#4CAF507A");
-            c.setStrokeWidth(1);
-            c.strokePolyline(xPoints,yPoints);
+            c.setStroke("#7C4DFF7A");
+            c.fillCircle(turn.beginPose.position.x, turn.beginPose.position.y, 2);
         }
+
     }
 
     public PoseVelocity2d updatePoseEstimate()
@@ -460,8 +439,20 @@ public final class Mecanum
         c.strokePolyline(xPoints, yPoints);
     }
 
-    public TrajectoryActionBuilder actionBuilder(Pose2d beginPose)
-    {
-        return new TrajectoryActionBuilder(TurnAction::new, FollowTrajectoryAction::new, new TrajectoryBuilderParams(1e-6, new ProfileParams(0.25, 0.1, 1e-2)), beginPose, 0.0, defaultTurnConstraints, defaultVelConstraint, defaultAccelConstraint);
+
+    public TrajectoryActionBuilder actionBuilder(Pose2d beginPose) {
+        return new TrajectoryActionBuilder(
+                TurnAction::new,
+                FollowTrajectoryAction::new,
+                new TrajectoryBuilderParams(
+                        1e-6,
+                        new ProfileParams(
+                                0.25, 0.1, 1e-2
+                        )
+                ),
+                beginPose, 0.0,
+                defaultTurnConstraints,
+                defaultVelConstraint, defaultAccelConstraint
+        );
     }
 }
