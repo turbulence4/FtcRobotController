@@ -13,6 +13,12 @@ public class Mecanum
     private DcMotor frontLeft, frontRight, backLeft, backRight;
     private IMU imu;
 
+    private final double ticksPerRev = 8192;
+    private final double wheelD = 38; //38mm in inches
+    private final double gearRatio = 1;
+    private final double ticksToInch = (8192 / (wheelD * Math.PI)) * 0.75;
+
+
     public Mecanum(HardwareMap hardwareMap)
     {
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
