@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class Mecanum
@@ -103,5 +104,55 @@ public class Mecanum
         double[] power = {frontLeft.getPower(), frontRight.getPower(), backLeft.getPower(), backRight.getPower()};
 
         return power;
+    }
+
+    public double getLeftDist()
+    {
+        return frontLeft.getCurrentPosition() * ticksToInch;
+    }
+
+    public double getRightDist()
+    {
+        return frontRight.getCurrentPosition() * ticksToInch;
+    }
+
+    public double getAvgDist()
+    {
+        return (getLeftDist() + getRightDist()) / 2;
+    }
+
+    public double getYaw() //yaw is rotation on the x axis (the only one we can do)
+    {
+        return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+    }
+
+    public void periodic(Telemetry telemetry) {
+        telemetry.addLine("Drive:");
+        telemetry.addData("Front Left:", getPower()[0]);
+        telemetry.addData("Back Left:", getPower()[1]);
+        telemetry.addData("Front Right:", getPower()[2]);
+        telemetry.addData("Back Right:", getPower()[3]);
+        telemetry.addLine("Position");
+        telemetry.addData("Left:", frontLeft.getCurrentPosition());
+        telemetry.addData("Right:", frontRight.getCurrentPosition());
+        telemetry.addData("Distance:", getAvgDist());
+        telemetry.addData("Yaw:", getYaw());
+    }
+
+    private DcMotor motorConfig(DcMotor motor)
+    {
+        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        return motor;
+    }
+
+    public void resetMotors()
+    {
+        motorConfig(frontLeft);
+        motorConfig(frontRight);
+        motorConfig(backLeft);
+        motorConfig(backRight);
     }
 }
