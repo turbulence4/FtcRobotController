@@ -41,7 +41,7 @@ public class Mecanum
         imu.initialize(parameters);
     }
 
-    public void Teleop(Gamepad gamepad1, boolean mode)
+    public void teleop(Gamepad gamepad1, boolean mode)
     {
         double x = gamepad1.left_stick_x;
         double y = -gamepad1.left_stick_y;
