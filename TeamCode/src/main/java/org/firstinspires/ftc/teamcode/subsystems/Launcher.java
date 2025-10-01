@@ -8,14 +8,13 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class Launcher
 {
-    //temporary names
-    private DcMotor launcherMotor1, launcherMotor2;
+    private DcMotor launcherMotorLeft, launcherMotorRight;
     private boolean isLauncherActive;
 
     public Launcher(HardwareMap hardwareMap)
     {
-        launcherMotor1 = hardwareMap.get(DcMotor.class, "launcherMotor1");
-        launcherMotor2 = hardwareMap.get(DcMotor.class, "launcherMotor2");
+        launcherMotorLeft = hardwareMap.get(DcMotor.class, "launcherMotor1");
+        launcherMotorRight = hardwareMap.get(DcMotor.class, "launcherMotor2");
     }
 
     public void teleop(Gamepad gamepad1)
@@ -26,11 +25,11 @@ public class Launcher
 
             if(isLauncherActive)
             {
-                launcherMotor1.setPower(0.7);
-                launcherMotor2.setPower(-0.7);
+                launcherMotorLeft.setPower(0.7);
+                launcherMotorRight.setPower(-0.7);
             } else {
-                launcherMotor1.setPower(0);
-                launcherMotor2.setPower(0);
+                launcherMotorLeft.setPower(0);
+                launcherMotorRight.setPower(0);
             }
         }
     }
