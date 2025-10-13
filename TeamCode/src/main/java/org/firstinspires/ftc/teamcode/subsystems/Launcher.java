@@ -9,6 +9,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class Launcher
 {
     private DcMotor launcherMotorLeft, launcherMotorRight;
+    private String what = "Fuck You John";
     private boolean isLauncherActive;
 
     public Launcher(HardwareMap hardwareMap)
@@ -37,5 +38,6 @@ public class Launcher
     public void periodic(Telemetry telemetry)
     {
         telemetry.addLine("Launcher: ");
+        telemetry.addLine(what);
     }
 }
