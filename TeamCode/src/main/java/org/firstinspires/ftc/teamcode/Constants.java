@@ -14,5 +14,11 @@ public class Constants
 
         public static final DcMotor.Direction invertLeft = DcMotor.Direction.FORWARD;
         public static final DcMotor.Direction invertRight = DcMotor.Direction.REVERSE;
+
+        public static final double ticksPerRev = 8192;
+        public static final double wheelD = 38; //38mm in inches
+        public static final double gearRatio = 1;
+        public static final double ticksToInch = (8192 / (wheelD * Math.PI)) * 0.75;
+
     }
 }
