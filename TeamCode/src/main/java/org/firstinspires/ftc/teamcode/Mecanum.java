@@ -63,12 +63,12 @@ public class Mecanum
             rotX /= 10;
         }
 
-        drive(x, y, rotX, false);
+        drive(x, y, rotX, true);
     }
 
     public void setPower(double frontLeftVal, double frontRightVal, double backLeftVal, double backRightVal)
     {
-        frontLeft.setPower(frontLeftVal * 2);
+        frontLeft.setPower(-frontLeftVal * 2);
         frontRight.setPower(frontRightVal * 2);
         backLeft.setPower(backLeftVal * 2);
         backRight.setPower(backRightVal * 2);

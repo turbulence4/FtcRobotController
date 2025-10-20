@@ -92,7 +92,7 @@ public final class TuningOpModes {
             public int getPerpEncoderPosition() {
                 return pl.driver.getEncoderY();
             }
-            
+
 
             @Override
             public void setParDirection(@NonNull DcMotorSimple.Direction direction) {

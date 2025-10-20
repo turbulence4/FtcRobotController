@@ -20,7 +20,7 @@ public class Launcher
 
     public void teleop(Gamepad gamepad1)
     {
-        if(gamepad1.y)
+        if(gamepad1.right_trigger != 0)
         {
             isLauncherActive = !isLauncherActive;
 
