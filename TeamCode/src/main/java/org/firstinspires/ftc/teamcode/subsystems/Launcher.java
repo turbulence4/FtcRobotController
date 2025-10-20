@@ -18,6 +18,9 @@ public class Launcher
         launcherMotorRight = hardwareMap.get(DcMotor.class, "launcherMotor2");
     }
 
+    //make everything not toggle and flip top motor
+    //fix launcher motors not activating
+
     public void teleop(Gamepad gamepad1)
     {
         if(gamepad1.right_trigger != 0)
