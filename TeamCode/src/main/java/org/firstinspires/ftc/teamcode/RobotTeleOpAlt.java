@@ -3,11 +3,12 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Launcher;
 
-@TeleOp(name = "TeleopSplit", group = "Linear Opmode")
-public class RobotTeleOp extends OpMode
+@TeleOp(name = "Teleop", group = "Linear Opmode")
+public class RobotTeleOpAlt extends OpMode
 {
     Mecanum s_driveTrain;
     Intake s_intake;
@@ -24,7 +25,7 @@ public class RobotTeleOp extends OpMode
         telemetry.update();
 
         s_driveTrain = new Mecanum(hardwareMap);
-        Mecanum.alt = false;
+        Mecanum.alt = true;
 
         try
         {

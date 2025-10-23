@@ -1,3 +1,5 @@
+//password for robot wifi is bttitans
+
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -18,7 +20,7 @@ public class Mecanum
     private final double wheelD = 38; //38mm in inches
     private final double gearRatio = 1;
     private final double ticksToInch = (8192 / (wheelD * Math.PI)) * 0.75;
-
+    public static boolean alt = false;
 
     public Mecanum(HardwareMap hardwareMap)
     {
@@ -32,16 +34,21 @@ public class Mecanum
         backLeft.setDirection(DcMotor.Direction.FORWARD);
         backRight.setDirection(DcMotor.Direction.REVERSE);
 
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         imu = hardwareMap.get(IMU.class, "imu");
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot
-                (RevHubOrientationOnRobot.LogoFacingDirection.FORWARD,
-                RevHubOrientationOnRobot.UsbFacingDirection.LEFT));
+                (RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                RevHubOrientationOnRobot.UsbFacingDirection.UP));
 
         imu.initialize(parameters);
     }
 
-    public void teleop(Gamepad gamepad1, boolean mode)
+    public void teleop(Gamepad gamepad1, Gamepad gamepad2, boolean mode)
     {
         double x = gamepad1.left_stick_x;
         double y = -gamepad1.left_stick_y;
@@ -68,10 +75,12 @@ public class Mecanum
 
     public void setPower(double frontLeftVal, double frontRightVal, double backLeftVal, double backRightVal)
     {
+        //dont set frontLeftVal as negative if copying this code for another robot
+        //prev: -- -
         frontLeft.setPower(-frontLeftVal * 2);
-        frontRight.setPower(frontRightVal * 2);
+        frontRight.setPower(-frontRightVal * 2);
         backLeft.setPower(backLeftVal * 2);
-        backRight.setPower(backRightVal * 2);
+        backRight.setPower(-backRightVal * 2);
     }
 
     public void drive(double xSpeed, double ySpeed, double rot, boolean fieldOrientated)
@@ -92,8 +101,8 @@ public class Mecanum
 
         double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rot), 1);
         double frontLeftPower = (rotY + rotX + rot) / denominator;
-        double frontRightPower = (rotY - rotX - rot) / denominator;
-        double backLeftPower = (rotY - rotX + rot) / denominator;
+        double frontRightPower = (rotY - rotX + rot) / denominator;
+        double backLeftPower = (rotY - rotX - rot) / denominator;
         double backRightPower = (rotY + rotX - rot) / denominator;
 
         setPower(frontLeftPower, backLeftPower, frontRightPower, backRightPower);
