@@ -10,6 +10,8 @@ import org.firstinspires.ftc.teamcode.subsystems.Launcher;
 @TeleOp(name = "Teleop", group = "Linear Opmode")
 public class RobotTeleOpAlt extends OpMode
 {
+    public static boolean alt = false;
+
     Mecanum s_driveTrain;
     Intake s_intake;
     Launcher s_launcher;
@@ -42,11 +44,16 @@ public class RobotTeleOpAlt extends OpMode
     {
         slomo = gamepad1.square;
 
-        s_driveTrain.teleop(gamepad1, gamepad2, slomo);
+        s_driveTrain.teleop(gamepad1, slomo);
         try
         {
-            s_intake.teleop(gamepad1, gamepad2);
-            s_launcher.teleop(gamepad1, gamepad2);
+            if(!Mecanum.alt) {
+                s_intake.teleop(gamepad1);
+                s_launcher.teleop(gamepad1);
+            } else {
+                s_intake.teleop(gamepad2);
+                s_launcher.teleop(gamepad2);
+            }
         } catch (Exception e) {
 
         }

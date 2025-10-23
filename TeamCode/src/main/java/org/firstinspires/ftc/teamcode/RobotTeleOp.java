@@ -41,11 +41,11 @@ public class RobotTeleOp extends OpMode
     {
         slomo = gamepad1.square;
 
-        s_driveTrain.teleop(gamepad1, gamepad2, slomo);
+        s_driveTrain.teleop(gamepad1, slomo);
         try
         {
-            s_intake.teleop(gamepad1, gamepad2);
-            s_launcher.teleop(gamepad1, gamepad2);
+            s_intake.teleop(gamepad1);
+            s_launcher.teleop(gamepad1);
         } catch (Exception e) {
 
         }

@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Mecanum;
 
 public class Launcher
 {
@@ -21,26 +20,15 @@ public class Launcher
         launcherMotorRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    public void teleop(Gamepad gamepad1, Gamepad gamepad2)
+    public void teleop(Gamepad gamepad)
     {
-        if(!Mecanum.alt) {
-            if (gamepad1.right_trigger > 0.0) {
-                launcherMotorLeft.setPower(-1);
-                launcherMotorRight.setPower(1);
-            } else {
-                launcherMotorLeft.setPower(0);
-                launcherMotorRight.setPower(0);
-            }
+        if (gamepad.right_trigger > 0.0) {
+            launcherMotorLeft.setPower(-1);
+            launcherMotorRight.setPower(1);
         } else {
-            if (gamepad2.right_trigger > 0.0) {
-                launcherMotorLeft.setPower(-1);
-                launcherMotorRight.setPower(1);
-            } else {
-                launcherMotorLeft.setPower(0);
-                launcherMotorRight.setPower(0);
-            }
+            launcherMotorLeft.setPower(0);
+            launcherMotorRight.setPower(0);
         }
-
     }
 
     public void periodic(Telemetry telemetry)
