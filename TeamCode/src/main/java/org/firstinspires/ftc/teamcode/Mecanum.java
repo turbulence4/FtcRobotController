@@ -20,7 +20,7 @@ public class Mecanum
     private final double wheelD = 38; //38mm in inches
     private final double gearRatio = 1;
     private final double ticksToInch = (8192 / (wheelD * Math.PI)) * 0.75;
-    public static boolean alt = false;
+    public static boolean alt;
 
     public Mecanum(HardwareMap hardwareMap)
     {
@@ -70,7 +70,7 @@ public class Mecanum
             rotX /= 10;
         }
 
-        drive(x, y, rotX, true);
+        drive(x, y, rotX, true );
     }
 
     public void setPower(double frontLeftVal, double frontRightVal, double backLeftVal, double backRightVal)

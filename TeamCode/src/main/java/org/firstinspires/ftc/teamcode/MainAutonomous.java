@@ -16,11 +16,11 @@ public class MainAutonomous extends LinearOpMode
     {
         if(opModeIsActive())
         {
-            int frontLeftTarget = frontLeft.getCurrentPosition() + (int)(frontLeftInches * Constants.MecanumConstants.ticksToInch);
-            int frontRightTarget = frontRight.getCurrentPosition() + (int)(frontRightInches * Constants.MecanumConstants.ticksToInch);
-            int backLeftTarget = backLeft.getCurrentPosition() + (int)(backLeftInches * Constants.MecanumConstants.ticksToInch);
-            int backRightTarget = backRight.getCurrentPosition() + (int)(backRightInches * Constants.MecanumConstants.ticksToInch);
-
+            //negative numbers are because motors are upside down
+            int frontLeftTarget = frontLeft.getCurrentPosition() + (int)(frontLeftInches * Constants.MecanumConstants.inchesToTick);
+            int frontRightTarget = frontRight.getCurrentPosition() + (int)(frontRightInches * Constants.MecanumConstants.inchesToTick);
+            int backLeftTarget = backLeft.getCurrentPosition() + (int)(backLeftInches * Constants.MecanumConstants.inchesToTick);
+            int backRightTarget = backRight.getCurrentPosition() + (int)(backRightInches * Constants.MecanumConstants.inchesToTick);
 
             frontLeft.setTargetPosition(frontLeftTarget);
             frontRight.setTargetPosition(frontRightTarget);
@@ -32,12 +32,12 @@ public class MainAutonomous extends LinearOpMode
             backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            frontLeft.setPower(-0.7);
-            frontRight.setPower(-0.7);
+            frontLeft.setPower(0.7);
+            frontRight.setPower(0.7);
             backLeft.setPower(0.7);
             backRight.setPower(0.7);
 
-            while (opModeIsActive() && (frontLeft.isBusy() || frontRight.isBusy() || backLeft.isBusy() || backRight.isBusy())) {}
+            while(opModeIsActive() && (frontLeft.isBusy() || frontRight.isBusy() || backLeft.isBusy() || backRight.isBusy())) {}
 
             frontLeft.setPower(0);
             frontRight.setPower(0);
@@ -60,13 +60,24 @@ public class MainAutonomous extends LinearOpMode
         backLeft.setDirection(Constants.MecanumConstants.invertLeft);
         backRight.setDirection(Constants.MecanumConstants.invertRight);
 
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         waitForStart();
 
         if(opModeIsActive())
         {
-            drive(-44, 44, -44, 44);
-            //add numbers once we actually do stuff with autonomous
-            //negative numbers are because motors are upside down
+            //forward 3ft
+            drive(3, 3, 3, 3);
+            //backward 3ft
+            drive(-3, -3, -3, -3);
+
+            //attempt to rotate 90 deg
+            //drive(20, -20, 20, -20);
+            //attempt to rotate -90 deg
+            //drive(-20, 20, -20, 20);
         }
     }
 }

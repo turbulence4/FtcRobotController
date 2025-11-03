@@ -3,15 +3,12 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Launcher;
 
-@TeleOp(name = "Teleop", group = "Linear Opmode")
+@TeleOp(name = "Teleop For Two", group = "Linear Opmode")
 public class RobotTeleOpAlt extends OpMode
 {
-    public static boolean alt = false;
-
     Mecanum s_driveTrain;
     Intake s_intake;
     Launcher s_launcher;
@@ -27,7 +24,7 @@ public class RobotTeleOpAlt extends OpMode
         telemetry.update();
 
         s_driveTrain = new Mecanum(hardwareMap);
-        Mecanum.alt = true;
+        Mecanum.alt = false;
 
         try
         {
@@ -47,13 +44,8 @@ public class RobotTeleOpAlt extends OpMode
         s_driveTrain.teleop(gamepad1, slomo);
         try
         {
-            if(!Mecanum.alt) {
-                s_intake.teleop(gamepad1);
-                s_launcher.teleop(gamepad1);
-            } else {
-                s_intake.teleop(gamepad2);
-                s_launcher.teleop(gamepad2);
-            }
+            s_intake.teleop(gamepad2);
+            s_launcher.teleop(gamepad2);
         } catch (Exception e) {
 
         }
