@@ -60,6 +60,8 @@ public class Intake
 
     public void periodic(Telemetry telemetry)
     {
-        telemetry.addLine("Intake:");
+        telemetry.addLine("Intake: " + intakeMotor.getPower());
+        telemetry.addLine("Belt Bottom: " + beltLeft.getPower());
+        telemetry.addLine("Belt Top: " + beltTopLeft.getPower());
     }
 }

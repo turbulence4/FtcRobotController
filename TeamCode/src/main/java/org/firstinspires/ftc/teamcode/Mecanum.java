@@ -39,7 +39,7 @@ public class Mecanum
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        imu = hardwareMap.get(IMU.class, "imu");
+        hardwareMap.get(IMU.class, "imu");
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot
                 (RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
@@ -117,12 +117,12 @@ public class Mecanum
 
     public double getLeftDist()
     {
-        return frontLeft.getCurrentPosition() * ticksToInch;
+        return frontLeft.getCurrentPosition() * Constants.MecanumConstants.ticksToInch;
     }
 
     public double getRightDist()
     {
-        return frontRight.getCurrentPosition() * ticksToInch;
+        return frontRight.getCurrentPosition() * Constants.MecanumConstants.ticksToInch;
     }
 
     public double getAvgDist()

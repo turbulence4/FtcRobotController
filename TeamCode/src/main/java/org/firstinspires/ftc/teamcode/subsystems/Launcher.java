@@ -28,6 +28,9 @@ public class Launcher
         } else if(gamepad.triangle) {
             launcherMotorLeft.setPower(-0.4);
             launcherMotorRight.setPower(0.4);
+        } else if(gamepad.circle) {
+            launcherMotorLeft.setPower(-1);
+            launcherMotorRight.setPower(1);
         } else {
             launcherMotorLeft.setPower(0);
             launcherMotorRight.setPower(0);
