@@ -23,11 +23,11 @@ public class Launcher
     public void teleop(Gamepad gamepad)
     {
         if (gamepad.right_trigger > 0.0) {
-            launcherMotorLeft.setPower(-0.55);
-            launcherMotorRight.setPower(0.55);
+            launcherMotorLeft.setPower(-0.57);
+            launcherMotorRight.setPower(0.57);
         } else if(gamepad.triangle) {
-            launcherMotorLeft.setPower(-0.4);
-            launcherMotorRight.setPower(0.4);
+            launcherMotorLeft.setPower(-0.42);
+            launcherMotorRight.setPower(0.42);
         } else if(gamepad.circle) {
             launcherMotorLeft.setPower(-1);
             launcherMotorRight.setPower(1);
