@@ -95,12 +95,68 @@ public class MainAutonomous extends OpMode
         telemetry.addData("Status", "Started");
     }
 
+    public void driveTimeBased(double speed, double time)
+    {
+        ElapsedTime elapsed = new ElapsedTime();
+
+        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        frontLeft.setPower(speed);
+        frontRight.setPower(speed);
+        backLeft.setPower(speed);
+        backRight.setPower(speed);
+
+        if(elapsed.seconds() > time)
+        {
+            frontLeft.setPower(0);
+            frontRight.setPower(0);
+            backLeft.setPower(0);
+            backRight.setPower(0);
+        }
+    }
+
+    //negative speed = clockwise rotation
+    public void rotateTimeBased(double speed, double time)
+    {
+        ElapsedTime elapsed = new ElapsedTime();
+
+        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        frontLeft.setPower(speed);
+        frontRight.setPower(-speed);
+        backLeft.setPower(speed);
+        backRight.setPower(-speed);
+
+        if(elapsed.seconds() > time)
+        {
+            frontLeft.setPower(0);
+            frontRight.setPower(0);
+            backLeft.setPower(0);
+            backRight.setPower(0);
+        }
+    }
+
     boolean drive(double speed, double distance, DistanceUnit distanceUnit, double holdSeconds)
     {
         final double TOLERANCE_MM = 10;
 
         double targetPosition = (distanceUnit.toMm(distance) * TICKS_PER_MM);
-
 
         frontLeft.setTargetPosition((int)targetPosition);
         frontRight.setTargetPosition((int)targetPosition);
@@ -113,9 +169,9 @@ public class MainAutonomous extends OpMode
         backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         frontLeft.setPower(speed);
-        frontRight.setPower(speed);
+        frontRight.setPower(-speed);
         backLeft.setPower(speed);
-        backRight.setPower(speed);
+        backRight.setPower(-speed);
 
         if(Math.abs(targetPosition - frontLeft.getCurrentPosition()) > (TOLERANCE_MM * TICKS_PER_MM))
         {
@@ -168,7 +224,11 @@ public class MainAutonomous extends OpMode
     public void loop()
     {
         telemetry.addLine("looping");
-        drive(DRIVE_SPEED, 24, DistanceUnit.INCH, 1);
+        driveTimeBased(DRIVE_SPEED, 3);
+        driveTimeBased(-DRIVE_SPEED, 3);
+        rotateTimeBased(DRIVE_SPEED, 2);
+        rotateTimeBased(-DRIVE_SPEED, 2);
+        //drive(DRIVE_SPEED, 24, DistanceUnit.INCH, 1);
 
         switch(alliance)
         {
