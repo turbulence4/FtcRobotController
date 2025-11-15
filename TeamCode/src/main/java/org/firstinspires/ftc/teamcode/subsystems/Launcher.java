@@ -9,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class Launcher
 {
     private DcMotor launcherMotorLeft, launcherMotorRight;
-    private String what = "Fuck You noah";
+    private String what = "sorry noah";
 
     public Launcher(HardwareMap hardwareMap)
     {
@@ -23,8 +23,8 @@ public class Launcher
     public void teleop(Gamepad gamepad)
     {
         if (gamepad.right_trigger > 0.0) {
-            launcherMotorLeft.setPower(-0.57);
-            launcherMotorRight.setPower(0.57);
+            launcherMotorLeft.setPower(-0.55);
+            launcherMotorRight.setPower(0.55);
         } else if(gamepad.triangle) {
             launcherMotorLeft.setPower(-0.42);
             launcherMotorRight.setPower(0.42);

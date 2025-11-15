@@ -56,7 +56,9 @@ public class Mecanum
 
         //counteract for imperfect strafing:
         //make x slightly stronger so that you don't have to push the stick as hard
-        x *= 1.1;
+        /*x *= 1.1;
+        y *= 1.1;
+        rotX *= 1.1;*/
 
         if(gamepad1.options)
         {
@@ -70,7 +72,7 @@ public class Mecanum
             rotX /= 10;
         }
 
-        drive(x, y, rotX, true );
+        drive(x, y, rotX, true);
     }
 
     public void setPower(double frontLeftVal, double frontRightVal, double backLeftVal, double backRightVal)
@@ -96,14 +98,16 @@ public class Mecanum
             rotX = xSpeed * Math.cos(-botDir) - ySpeed * Math.sin(-botDir);
             rotY = xSpeed * Math.sin(-botDir) + ySpeed * Math.cos(-botDir);
 
-            rotX *= 1.1; //counteract imperfect strafing
+            //counteract imperfect strafing
+            /*rotX *= 1.1;
+            rotY *= 1.1;*/
         }
 
         double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rot), 1);
-        double frontLeftPower = (rotY + rotX + rot) / denominator;
-        double frontRightPower = (rotY - rotX + rot) / denominator;
-        double backLeftPower = (rotY - rotX - rot) / denominator;
-        double backRightPower = (rotY + rotX - rot) / denominator;
+        double frontLeftPower = (-rotX + rotY + rot) / denominator;
+        double frontRightPower = (rotX + rotY + rot) / denominator;
+        double backLeftPower = (rotX + rotY - rot) / denominator;
+        double backRightPower = (-rotX + rotY - rot) / denominator;
 
         setPower(frontLeftPower, backLeftPower, frontRightPower, backRightPower);
     }
