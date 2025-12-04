@@ -75,8 +75,10 @@ public class StarterBotTeleop extends OpMode {
     final double LAUNCHER_MIN_VELOCITY = 1075;
 
     // Declare OpMode members.
-    private DcMotor leftDrive = null;
-    private DcMotor rightDrive = null;
+    private DcMotor frontLeft = null;
+    private DcMotor frontRight = null;
+    private DcMotor backLeft = null;
+    private DcMotor backRight = null;
     private DcMotorEx launcher = null;
     private CRServo leftFeeder = null;
     private CRServo rightFeeder = null;
@@ -109,8 +111,10 @@ public class StarterBotTeleop extends OpMode {
     private LaunchState launchState;
 
     // Setup a variable for each drive wheel to save power level for telemetry
-    double leftPower;
-    double rightPower;
+    double frontLeftPower;
+    double frontRightPower;
+    double backLeftPower;
+    double backRightPower;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -124,8 +128,10 @@ public class StarterBotTeleop extends OpMode {
          * to 'get' must correspond to the names assigned during the robot configuration
          * step.
          */
-        leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        backRight = hardwareMap.get(DcMotor.class, "backRight");
         launcher = hardwareMap.get(DcMotorEx.class, "launcher");
         leftFeeder = hardwareMap.get(CRServo.class, "left_feeder");
         rightFeeder = hardwareMap.get(CRServo.class, "right_feeder");
@@ -137,8 +143,11 @@ public class StarterBotTeleop extends OpMode {
          * Note: The settings here assume direct drive on left and right wheels. Gear
          * Reduction or 90 Deg drives may require direction flips
          */
-        leftDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightDrive.setDirection(DcMotor.Direction.FORWARD);
+        //this may need to be fixed
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        frontRight.setDirection(DcMotor.Direction.FORWARD);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+        backRight.setDirection(DcMotor.Direction.FORWARD);
 
         /*
          * Here we set our launcher to the RUN_USING_ENCODER runmode.
@@ -154,8 +163,10 @@ public class StarterBotTeleop extends OpMode {
          * slow down much faster when it is coasting. This creates a much more controllable
          * drivetrain. As the robot stops much quicker.
          */
-        leftDrive.setZeroPowerBehavior(BRAKE);
-        rightDrive.setZeroPowerBehavior(BRAKE);
+        frontLeft.setZeroPowerBehavior(BRAKE);
+        frontRight.setZeroPowerBehavior(BRAKE);
+        backLeft.setZeroPowerBehavior(BRAKE);
+        backRight.setZeroPowerBehavior(BRAKE);
         launcher.setZeroPowerBehavior(BRAKE);
 
         /*
@@ -227,7 +238,7 @@ public class StarterBotTeleop extends OpMode {
          * Show the state and motor powers
          */
         telemetry.addData("State", launchState);
-        telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+        telemetry.addData("Motors", "frontLeft (%.2f), frontRight (%.2f), backLeft(%.2f), backRight(%.2f)", frontLeftPower, frontRightPower, backLeftPower, backRightPower);
         telemetry.addData("motorSpeed", launcher.getVelocity());
 
     }
@@ -240,14 +251,18 @@ public class StarterBotTeleop extends OpMode {
     }
 
     void arcadeDrive(double forward, double rotate) {
-        leftPower = forward + rotate;
-        rightPower = forward - rotate;
+        frontLeftPower = forward + rotate;
+        frontRightPower = forward - rotate;
+        backLeftPower = forward + rotate;
+        backRightPower = forward - rotate;
 
         /*
          * Send calculated power to wheels
          */
-        leftDrive.setPower(leftPower);
-        rightDrive.setPower(rightPower);
+        frontLeft.setPower(frontLeftPower);
+        frontRight.setPower(frontRightPower);
+        backLeft.setPower(backLeftPower);
+        backRight.setPower(backRightPower);
     }
 
     void launch(boolean shotRequested) {

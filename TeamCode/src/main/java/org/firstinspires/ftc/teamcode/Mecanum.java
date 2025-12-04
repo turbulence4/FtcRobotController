@@ -51,7 +51,7 @@ public class Mecanum
     public void teleop(Gamepad gamepad1, boolean mode)
     {
         double x = gamepad1.left_stick_x;
-        double y = -gamepad1.left_stick_y;
+        double y = gamepad1.left_stick_y;
         double rotX = gamepad1.right_stick_x; //turning in place
 
         //counteract for imperfect strafing:
@@ -72,17 +72,17 @@ public class Mecanum
             rotX /= 10;
         }
 
-        drive(x, y, rotX, true);
+        drive(x, y, -rotX, true);
     }
 
     public void setPower(double frontLeftVal, double frontRightVal, double backLeftVal, double backRightVal)
     {
         //dont set frontLeftVal as negative if copying this code for another robot
         //prev: -- -
-        frontLeft.setPower(-frontLeftVal * 2);
-        frontRight.setPower(-frontRightVal * 2);
+        frontLeft.setPower(frontLeftVal * 2);
+        frontRight.setPower(frontRightVal * 2);
         backLeft.setPower(backLeftVal * 2);
-        backRight.setPower(-backRightVal * 2);
+        backRight.setPower(backRightVal * 2);
     }
 
     public void drive(double xSpeed, double ySpeed, double rot, boolean fieldOrientated)
@@ -95,8 +95,8 @@ public class Mecanum
             double botDir = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
             //rotate the movement direction counter to the bot's rotation
-            rotX = xSpeed * Math.cos(-botDir) - ySpeed * Math.sin(-botDir);
-            rotY = xSpeed * Math.sin(-botDir) + ySpeed * Math.cos(-botDir);
+            rotX = xSpeed * Math.cos(botDir) - ySpeed * Math.sin(botDir);
+            rotY = xSpeed * Math.sin(botDir) + ySpeed * Math.cos(botDir);
 
             //counteract imperfect strafing
             /*rotX *= 1.1;

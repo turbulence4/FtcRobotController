@@ -33,6 +33,7 @@ public class MainAutonomous extends OpMode
     private CRServo beltLeft, beltRight, beltTopLeft, beltTopRight;
 
     private String alliance = "red";
+    private String startingPosition = "back";
 
     private enum AutonomousState {
         LAUNCH,
@@ -43,6 +44,7 @@ public class MainAutonomous extends OpMode
         EXIT_ONE_BLUE,
         EXIT_ONE_RED,
         EXIT_TWO,
+        DRIVE_FROM_BACK,
         COMPLETE;
     }
 
@@ -86,8 +88,6 @@ public class MainAutonomous extends OpMode
         launcherMotorLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         launcherMotorRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        autonomousState = AutonomousState.DRIVING_OFF_LINE;
-
         imu = hardwareMap.get(IMU.class, "imu");
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot
@@ -96,6 +96,7 @@ public class MainAutonomous extends OpMode
 
         imu.initialize(parameters);
 
+        autonomousState = AutonomousState.DRIVE_FROM_BACK;
         telemetry.addData("Status", "Initialized");
     }
 
@@ -113,9 +114,20 @@ public class MainAutonomous extends OpMode
             alliance = "blue";
         }
 
+        if (gamepad1.dpad_down) {
+            startingPosition = "back";
+            autonomousState = AutonomousState.DRIVE_FROM_BACK;
+        } else if (gamepad1.dpad_up) {
+            startingPosition = "goals";
+            autonomousState = AutonomousState.DRIVING_OFF_LINE;
+        }
+
         telemetry.addData("press circle", "for red");
         telemetry.addData("press square", "for blue");
         telemetry.addData("selected alliance", alliance);
+        telemetry.addData("press dpad_up", "for starting at goals");
+        telemetry.addData("press dpad_down", "for starting at back");
+        telemetry.addData("starting position", startingPosition);
     }
 
     @Override
@@ -125,8 +137,6 @@ public class MainAutonomous extends OpMode
     }
 
     boolean launch(double speed, double time) {
-
-
         launcherMotorLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         launcherMotorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -141,7 +151,7 @@ public class MainAutonomous extends OpMode
         return(launchTimer.seconds() > time);
     }
 
-    boolean drive(double speed, double distance, DistanceUnit distanceUnit, double holdSeconds)
+    boolean drive(double speed, double distance, DistanceUnit distanceUnit, double holdSeconds, boolean warmup)
     {
         final double TOLERANCE_MM = 10;
 
@@ -157,8 +167,11 @@ public class MainAutonomous extends OpMode
         backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        launcherMotorRight.setPower(.44);
-        launcherMotorLeft.setPower(-.44);
+        if(warmup == true) {
+            launcherMotorRight.setPower(.44);
+            launcherMotorLeft.setPower(-.44);
+        }
+
 
         frontLeft.setPower(speed);
         frontRight.setPower(speed);
@@ -227,9 +240,26 @@ public class MainAutonomous extends OpMode
 
         switch(autonomousState)
         {
+            case DRIVE_FROM_BACK:
+
+                telemetry.addLine("driving off of the back");
+                if(drive(.3,  24, DistanceUnit.INCH, 1, false))
+                {
+                    telemetry.addLine("drive from back complete");
+                    frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+                    launchTimer.reset();
+                    driveTimer.reset();
+                    autonomousState = AutonomousState.COMPLETE;
+                }
+                break;
+
             case DRIVING_OFF_LINE:
                 telemetry.addLine("in auto switch");
-                if(drive(.3,  -47, DistanceUnit.INCH, 1))
+                if(drive(.3,  -47, DistanceUnit.INCH, 1,true))
                 {
                     telemetry.addLine("drive 1 complete");
                     frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -305,7 +335,7 @@ public class MainAutonomous extends OpMode
             case EXIT_TWO:
                 telemetry.addLine("exit part 2");
 
-                if(drive(.3,  20, DistanceUnit.INCH, 1)) {
+                if(drive(.3,  20, DistanceUnit.INCH, 1, false)) {
                     telemetry.addLine("drive 3 complete");
                     frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -317,6 +347,17 @@ public class MainAutonomous extends OpMode
                     autonomousState = AutonomousState.COMPLETE;
                 }
                 break;
+            case COMPLETE:
+                if(frontLeft.isBusy()) {
+                    frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+                }
+
+                break;
+
         }
 
         telemetry.addData("Motor Current Positions", "left (%d), right (%d)",
