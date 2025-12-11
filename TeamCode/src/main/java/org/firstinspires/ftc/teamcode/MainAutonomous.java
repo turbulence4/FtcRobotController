@@ -167,7 +167,7 @@ public class MainAutonomous extends OpMode
         backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        if(warmup == true) {
+        if(warmup) {
             launcherMotorRight.setPower(.44);
             launcherMotorLeft.setPower(-.44);
         }

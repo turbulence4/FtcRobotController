@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
@@ -24,7 +26,7 @@ public class RobotTeleOp extends OpMode
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        s_driveTrain = new Mecanum(hardwareMap);
+        s_driveTrain = new Mecanum(hardwareMap, RevHubOrientationOnRobot.UsbFacingDirection.UP, DcMotorSimple.Direction.REVERSE);
         Mecanum.alt = true;
 
         try

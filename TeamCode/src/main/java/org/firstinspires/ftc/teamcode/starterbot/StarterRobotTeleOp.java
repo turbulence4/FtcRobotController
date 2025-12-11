@@ -1,17 +1,21 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.starterbot;
 
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import org.firstinspires.ftc.teamcode.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.Launcher;
 
-@TeleOp(name = "Teleop For Two", group = "Linear Opmode")
-public class RobotTeleOpAlt extends OpMode
-{
+import org.firstinspires.ftc.teamcode.Mecanum;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
+
+@TeleOp()
+
+public class StarterRobotTeleOp extends OpMode {
+
     Mecanum s_driveTrain;
     Intake s_intake;
-    Launcher s_launcher;
+    LauncherStarter s_launcher;
 
     private ElapsedTime runTime = new ElapsedTime();
 
@@ -23,14 +27,13 @@ public class RobotTeleOpAlt extends OpMode
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        s_driveTrain = new Mecanum(hardwareMap);
-        Mecanum.alt = false;
+        s_driveTrain = new Mecanum(hardwareMap, RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD, DcMotor.Direction.REVERSE);
 
-        try
-        {
-            s_intake = new Intake(hardwareMap);
-            s_launcher = new Launcher(hardwareMap);
-        } catch(Exception e) {
+        Mecanum.alt = true;
+
+        try {
+            s_launcher = new LauncherStarter(hardwareMap);
+        } catch (Exception e) {
 
         }
 
@@ -44,8 +47,10 @@ public class RobotTeleOpAlt extends OpMode
         s_driveTrain.teleop(gamepad1, slomo);
         try
         {
-            s_intake.teleop(gamepad2);
-            s_launcher.teleop(gamepad2);
+
+
+            s_launcher.teleop(gamepad1);
+
         } catch (Exception e) {
 
         }
@@ -53,8 +58,6 @@ public class RobotTeleOpAlt extends OpMode
         s_driveTrain.periodic(telemetry);
         try
         {
-            s_intake.periodic(telemetry);
-            s_launcher.periodic(telemetry);
         } catch(Exception e) {
 
         }

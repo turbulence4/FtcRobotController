@@ -34,14 +34,18 @@ package org.firstinspires.ftc.teamcode.starterbot;
 
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 /*
  * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
@@ -82,6 +86,8 @@ public class StarterBotTeleop extends OpMode {
     private DcMotorEx launcher = null;
     private CRServo leftFeeder = null;
     private CRServo rightFeeder = null;
+
+    private IMU imu;
 
     ElapsedTime feederTimer = new ElapsedTime();
 
@@ -186,6 +192,15 @@ public class StarterBotTeleop extends OpMode {
         /*
          * Tell the driver that initialization is complete.
          */
+
+        imu = hardwareMap.get(IMU.class, "imu");
+
+        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot
+                (RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                        RevHubOrientationOnRobot.UsbFacingDirection.UP));
+
+        imu.initialize(parameters);
+
         telemetry.addData("Status", "Initialized");
     }
 
@@ -217,7 +232,18 @@ public class StarterBotTeleop extends OpMode {
          * both motors work to rotate the robot. Combinations of these inputs can be used to create
          * more complex maneuvers.
          */
-        arcadeDrive(-gamepad1.left_stick_y, gamepad1.right_stick_x);
+        //arcadeDrive(-gamepad1.left_stick_y, gamepad1.right_stick_x);
+
+        double x = gamepad1.left_stick_x;
+        double y = gamepad1.left_stick_y;
+        double rotX = gamepad1.right_stick_x; //turning in place
+
+        if(gamepad1.options)
+        {
+            imu.resetYaw();
+        }
+
+        drive(x, y, -rotX, true);
 
         /*
          * Here we give the user control of the speed of the launcher motor without automatically
@@ -259,6 +285,32 @@ public class StarterBotTeleop extends OpMode {
         /*
          * Send calculated power to wheels
          */
+        frontLeft.setPower(frontLeftPower);
+        frontRight.setPower(frontRightPower);
+        backLeft.setPower(backLeftPower);
+        backRight.setPower(backRightPower);
+    }
+
+    public void drive(double xSpeed, double ySpeed, double rot, boolean fieldOrientated)
+    {
+        double rotY = ySpeed;
+        double rotX = xSpeed;
+
+        if(fieldOrientated)
+        {
+            double botDir = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+
+            //rotate the movement direction counter to the bot's rotation
+            rotX = xSpeed * Math.cos(botDir) - ySpeed * Math.sin(botDir);
+            rotY = xSpeed * Math.sin(botDir) + ySpeed * Math.cos(botDir);
+        }
+
+        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rot), 1);
+        double frontLeftPower = (-rotX + rotY + rot) / denominator;
+        double frontRightPower = (rotX + rotY + rot) / denominator;
+        double backLeftPower = (rotX + rotY - rot) / denominator;
+        double backRightPower = (-rotX + rotY - rot) / denominator;
+
         frontLeft.setPower(frontLeftPower);
         frontRight.setPower(frontRightPower);
         backLeft.setPower(backLeftPower);

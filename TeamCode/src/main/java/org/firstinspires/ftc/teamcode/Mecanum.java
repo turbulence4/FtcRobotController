@@ -22,7 +22,7 @@ public class Mecanum
     private final double ticksToInch = (8192 / (wheelD * Math.PI)) * 0.75;
     public static boolean alt;
 
-    public Mecanum(HardwareMap hardwareMap)
+    public Mecanum(HardwareMap hardwareMap, RevHubOrientationOnRobot.UsbFacingDirection direction, DcMotor.Direction motorDirection)
     {
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
         frontRight = hardwareMap.get(DcMotor.class, "frontRight");
@@ -30,9 +30,9 @@ public class Mecanum
         backRight = hardwareMap.get(DcMotor.class, "backRight");
 
         frontLeft.setDirection(DcMotor.Direction.FORWARD);
-        frontRight.setDirection(DcMotor.Direction.REVERSE);
+        frontRight.setDirection(motorDirection);
         backLeft.setDirection(DcMotor.Direction.FORWARD);
-        backRight.setDirection(DcMotor.Direction.REVERSE);
+        backRight.setDirection(motorDirection);
 
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -43,7 +43,7 @@ public class Mecanum
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot
                 (RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                RevHubOrientationOnRobot.UsbFacingDirection.UP));
+                direction));
 
         imu.initialize(parameters);
     }
