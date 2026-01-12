@@ -29,7 +29,8 @@ public class MainAutonomous extends OpMode
     private ElapsedTime intakeTimer = new ElapsedTime();
     private ElapsedTime launchTimer = new ElapsedTime();
 
-    private DcMotorEx frontLeft, frontRight, backLeft, backRight, launcherMotorLeft, launcherMotorRight, intakeMotor;
+    private DcMotorEx frontLeft, frontRight, backLeft, backRight, launcherMotorLeft, launcherMotorRight;
+    private DcMotor intakeMotor;
     private CRServo beltLeft, beltRight, beltTopLeft, beltTopRight;
 
     private String alliance = "red";
@@ -43,8 +44,11 @@ public class MainAutonomous extends OpMode
         DRIVING_OFF_LINE,
         EXIT_ONE_BLUE,
         EXIT_ONE_RED,
+        TURN_TO_BALLS,
+        INTAKE,
         EXIT_TWO,
         DRIVE_FROM_BACK,
+        BALLS,
         COMPLETE;
     }
 
@@ -60,7 +64,7 @@ public class MainAutonomous extends OpMode
         backRight = hardwareMap.get(DcMotorEx.class, "backRight");
         launcherMotorLeft = hardwareMap.get(DcMotorEx.class, "launcherMotorLeft");
         launcherMotorRight = hardwareMap.get(DcMotorEx.class, "launcherMotorRight");
-        intakeMotor = hardwareMap.get(DcMotorEx.class, "intakeMotor");
+        intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
         beltLeft = hardwareMap.get(CRServo.class, "beltLeft");
         beltRight = hardwareMap.get(CRServo.class, "beltRight");
         beltTopLeft = hardwareMap.get(CRServo.class, "beltTop");
@@ -79,6 +83,7 @@ public class MainAutonomous extends OpMode
         backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         launcherMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcherMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //set zero power behaviors
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -151,7 +156,7 @@ public class MainAutonomous extends OpMode
         return(launchTimer.seconds() > time);
     }
 
-    boolean drive(double speed, double distance, DistanceUnit distanceUnit, double holdSeconds, boolean warmup)
+    boolean drive(double speed, double distance, DistanceUnit distanceUnit, double holdSeconds, boolean warmup, boolean intake)
     {
         final double TOLERANCE_MM = 10;
 
@@ -166,6 +171,14 @@ public class MainAutonomous extends OpMode
         frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        if(intake) {
+            intakeMotor.setPower(.85);
+            beltTopLeft.setPower(-1);
+            beltTopRight.setPower(-1);
+            beltLeft.setPower(-1);
+            beltRight.setPower(1);
+        }
 
         if(warmup) {
             launcherMotorRight.setPower(.44);
@@ -243,7 +256,7 @@ public class MainAutonomous extends OpMode
             case DRIVE_FROM_BACK:
 
                 telemetry.addLine("driving off of the back");
-                if(drive(.3,  24, DistanceUnit.INCH, 1, false))
+                if(drive(.3,  24, DistanceUnit.INCH, 1, false, false))
                 {
                     telemetry.addLine("drive from back complete");
                     frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -259,7 +272,7 @@ public class MainAutonomous extends OpMode
 
             case DRIVING_OFF_LINE:
                 telemetry.addLine("in auto switch");
-                if(drive(.3,  -47, DistanceUnit.INCH, 1,true))
+                if(drive(.3,  -47, DistanceUnit.INCH, 1,true, false))
                 {
                     telemetry.addLine("drive 1 complete");
                     frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -294,9 +307,53 @@ public class MainAutonomous extends OpMode
                         autonomousState = AutonomousState.EXIT_ONE_BLUE;
                     } else if(alliance == "red") {
                         autonomousState = AutonomousState.EXIT_ONE_RED;
+                        //autonomousState = AutonomousState.EXIT_ONE_RED;
                     } else {
                         autonomousState = AutonomousState.COMPLETE;
                     }
+                }
+                break;
+            case TURN_TO_BALLS:
+                if(drive(.3,-10,DistanceUnit.INCH,1,false, false)){
+                    frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+                    launchTimer.reset();
+                    driveTimer.reset();
+                    autonomousState = AutonomousState.INTAKE;
+                }
+
+
+                break;
+            case INTAKE:
+                if(rotate(.3,-130,AngleUnit.DEGREES,1))
+                {
+                    frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+                    launchTimer.reset();
+                    driveTimer.reset();
+                    autonomousState = AutonomousState.BALLS;
+
+                }
+
+                break;
+            case BALLS:
+                if(drive(.7,-50,DistanceUnit.INCH,1,false,true)){
+                    frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+
+
+                    launchTimer.reset();
+                    driveTimer.reset();
+                    autonomousState = AutonomousState.COMPLETE;
                 }
                 break;
 
@@ -304,11 +361,22 @@ public class MainAutonomous extends OpMode
                 telemetry.addLine("exit part 1 blue");
                 if(rotate(.3, 90, AngleUnit.DEGREES, 1))
                 {
+                    intakeMotor.setPower(0);
+                    beltTopLeft.setPower(0);
+                    beltTopRight.setPower(0);
+                    beltLeft.setPower(0);
+                    beltRight.setPower(0);
                     telemetry.addLine("drive 2 complete");
                     frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+                    intakeMotor.setPower(0);
+                    beltTopLeft.setPower(0);
+                    beltTopRight.setPower(0);
+                    beltLeft.setPower(0);
+                    beltRight.setPower(0);
 
                     launchTimer.reset();
                     driveTimer.reset();
@@ -335,7 +403,7 @@ public class MainAutonomous extends OpMode
             case EXIT_TWO:
                 telemetry.addLine("exit part 2");
 
-                if(drive(.3,  20, DistanceUnit.INCH, 1, false)) {
+                if(drive(.3,  20, DistanceUnit.INCH, 1, false, false)) {
                     telemetry.addLine("drive 3 complete");
                     frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

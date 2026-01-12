@@ -21,6 +21,7 @@ public class Mecanum
     private final double gearRatio = 1;
     private final double ticksToInch = (8192 / (wheelD * Math.PI)) * 0.75;
     public static boolean alt;
+    private static float tpx, tpy = 0;
 
     public Mecanum(HardwareMap hardwareMap, RevHubOrientationOnRobot.UsbFacingDirection direction, DcMotor.Direction motorDirection)
     {
@@ -56,9 +57,11 @@ public class Mecanum
 
         //counteract for imperfect strafing:
         //make x slightly stronger so that you don't have to push the stick as hard
-        /*x *= 1.1;
+        /*
+        x *= 1.1;
         y *= 1.1;
-        rotX *= 1.1;*/
+        rotX *= 1.1;
+        */
 
         if(gamepad1.options)
         {
