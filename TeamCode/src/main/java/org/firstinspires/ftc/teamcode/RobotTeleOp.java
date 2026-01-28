@@ -26,7 +26,7 @@ public class RobotTeleOp extends OpMode
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        s_driveTrain = new Mecanum(hardwareMap, RevHubOrientationOnRobot.UsbFacingDirection.UP, DcMotorSimple.Direction.REVERSE);
+        s_driveTrain = new Mecanum(hardwareMap, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD, DcMotorSimple.Direction.REVERSE);
         Mecanum.alt = true;
 
         try

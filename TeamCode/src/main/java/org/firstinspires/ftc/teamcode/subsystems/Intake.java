@@ -11,6 +11,7 @@ public class Intake
 {
     private DcMotor intakeMotor;
     private CRServo beltLeft, beltRight, beltTopLeft, beltTopRight;
+    private DcMotor transitionMotor;
 
     public Intake(HardwareMap hardwareMap)
     {
@@ -19,6 +20,7 @@ public class Intake
         beltRight = hardwareMap.get(CRServo.class, "beltRight");
         beltTopLeft = hardwareMap.get(CRServo.class, "beltTop");
         beltTopRight = hardwareMap.get(CRServo.class, "beltDown");
+        transitionMotor = hardwareMap.get(DcMotor.class, "transitionMotor");
     }
 
     public void teleop(Gamepad gamepad)
@@ -26,16 +28,15 @@ public class Intake
         if(gamepad.left_bumper)
         {
             intakeMotor.setPower(0.85);
-            beltLeft.setPower(-1);
-            beltRight.setPower(1);
+            transitionMotor.setPower(-1);
         }
         if(!gamepad.left_bumper && !gamepad.right_bumper)
         {
             intakeMotor.setPower(0);
-            beltLeft.setPower(0);
-            beltRight.setPower(0);
+            transitionMotor.setPower(0);
         }
-        if(gamepad.left_trigger > 0)
+        //no purpose as of rn
+        /*if(gamepad.left_trigger > 0)
         {
             beltTopLeft.setPower(-1);
             beltTopRight.setPower(-1);
@@ -46,22 +47,22 @@ public class Intake
             beltTopRight.setPower(1);
             beltRight.setPower(-1);
             beltLeft.setPower(1);
-        }
+        }*/
         if(gamepad.square)
         {
             intakeMotor.setPower(-0.85);
         }
-        if (!gamepad.square && !gamepad.right_bumper && gamepad.left_trigger == 0)
+        /*if(!gamepad.square && !gamepad.right_bumper && gamepad.left_trigger == 0)
         {
-            beltTopLeft.setPower(0);
-            beltTopRight.setPower(0);
-        }
+            //beltTopLeft.setPower(0);
+            //beltTopRight.setPower(0);
+            transitionMotor.setPower(0);
+        }*/
     }
 
     public void periodic(Telemetry telemetry)
     {
         telemetry.addLine("Intake: " + intakeMotor.getPower());
-        telemetry.addLine("Belt Bottom: " + beltLeft.getPower());
-        telemetry.addLine("Belt Top: " + beltTopLeft.getPower());
+        telemetry.addLine("Transition: " + transitionMotor.getPower());
     }
 }

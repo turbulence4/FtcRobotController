@@ -43,7 +43,7 @@ public class Mecanum
         imu = hardwareMap.get(IMU.class, "imu");
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot
-                (RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                (RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
                 direction));
 
         imu.initialize(parameters);
@@ -51,7 +51,7 @@ public class Mecanum
 
     public void teleop(Gamepad gamepad1, boolean mode)
     {
-        double x = gamepad1.left_stick_x;
+        double x = -gamepad1.left_stick_x;
         double y = gamepad1.left_stick_y;
         double rotX = gamepad1.right_stick_x; //turning in place
 
