@@ -28,36 +28,15 @@ public class Intake
         if(gamepad.left_bumper)
         {
             intakeMotor.setPower(0.85);
-            transitionMotor.setPower(-1);
+            transitionMotor.setPower(-0.35);
         }
-        if(!gamepad.left_bumper && !gamepad.right_bumper)
-        {
+        if(!gamepad.left_bumper && !gamepad.right_bumper) {
             intakeMotor.setPower(0);
             transitionMotor.setPower(0);
         }
-        //no purpose as of rn
-        /*if(gamepad.left_trigger > 0)
-        {
-            beltTopLeft.setPower(-1);
-            beltTopRight.setPower(-1);
-        }
-        if(gamepad.right_bumper)
-        {
-            beltTopLeft.setPower(1);
-            beltTopRight.setPower(1);
-            beltRight.setPower(-1);
-            beltLeft.setPower(1);
-        }*/
-        if(gamepad.square)
-        {
+        if(gamepad.square) {
             intakeMotor.setPower(-0.85);
         }
-        /*if(!gamepad.square && !gamepad.right_bumper && gamepad.left_trigger == 0)
-        {
-            //beltTopLeft.setPower(0);
-            //beltTopRight.setPower(0);
-            transitionMotor.setPower(0);
-        }*/
     }
 
     public void periodic(Telemetry telemetry)

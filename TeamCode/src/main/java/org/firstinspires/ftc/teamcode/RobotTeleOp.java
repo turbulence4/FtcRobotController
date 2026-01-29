@@ -27,7 +27,6 @@ public class RobotTeleOp extends OpMode
         telemetry.update();
 
         s_driveTrain = new Mecanum(hardwareMap, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD, DcMotorSimple.Direction.REVERSE);
-        Mecanum.alt = true;
 
         try
         {
@@ -42,7 +41,7 @@ public class RobotTeleOp extends OpMode
 
     public void loop()
     {
-        slomo = gamepad1.square;
+        //slomo = gamepad1.square;
 
         s_driveTrain.teleop(gamepad1, slomo);
         try

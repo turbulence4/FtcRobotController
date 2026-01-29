@@ -29,8 +29,6 @@ public class StarterRobotTeleOp extends OpMode {
 
         s_driveTrain = new Mecanum(hardwareMap, RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD, DcMotor.Direction.REVERSE);
 
-        Mecanum.alt = true;
-
         try {
             s_launcher = new LauncherStarter(hardwareMap);
         } catch (Exception e) {

@@ -13,7 +13,7 @@ public class Launcher
     private DcMotor launcherMotor;
     private String what = "Fuck You John";
     private double powerDifference = 0;
-    private double baseHighPower = 0.61;
+    private double baseHighPower = 0.79;
     private double highPower = baseHighPower;
     public static final double idealVoltage = 13;
     private double currentVoltage = 12.8;
@@ -36,7 +36,7 @@ public class Launcher
         if(gamepad.triangle) {
             launcherMotor.setPower((baseHighPower + powerDifference) * powerRatio);
         } else if(gamepad.right_trigger > 0.0) {
-            launcherMotor.setPower(0.45 * powerRatio);
+            launcherMotor.setPower(0.67 * powerRatio);
         } else if(gamepad.circle) {
             launcherMotor.setPower(1);
         } else {

@@ -20,7 +20,7 @@ public class Mecanum
     private final double wheelD = 38; //38mm in inches
     private final double gearRatio = 1;
     private final double ticksToInch = (8192 / (wheelD * Math.PI)) * 0.75;
-    public static boolean alt;
+    public static boolean fieldOrientated = false;
     private static float tpx, tpy = 0;
 
     public Mecanum(HardwareMap hardwareMap, RevHubOrientationOnRobot.UsbFacingDirection direction, DcMotor.Direction motorDirection)
@@ -75,7 +75,12 @@ public class Mecanum
             rotX /= 10;
         }
 
-        drive(x, y, -rotX, true);
+        if(gamepad1.shareWasPressed())
+        {
+            fieldOrientated = !fieldOrientated;
+        }
+
+        drive(x, y, -rotX, fieldOrientated);
     }
 
     public void setPower(double frontLeftVal, double frontRightVal, double backLeftVal, double backRightVal)
@@ -143,6 +148,7 @@ public class Mecanum
     }
 
     public void periodic(Telemetry telemetry) {
+        telemetry.addData("field orientation:", fieldOrientated);
         telemetry.addLine("Drive:");
         telemetry.addData("Front Left:", getPower()[0]);
         telemetry.addData("Back Left:", getPower()[1]);
