@@ -37,6 +37,15 @@ public class Intake
         if(gamepad.square) {
             intakeMotor.setPower(-0.85);
         }
+        if(gamepad.right_bumper) {
+            intakeMotor.setPower(-0.85);
+            transitionMotor.setPower(0.35);
+        }
+        //nos button
+        if(gamepad.cross) {
+            intakeMotor.setPower(0.85);
+            transitionMotor.setPower(-0.5);
+        }
     }
 
     public void periodic(Telemetry telemetry)
