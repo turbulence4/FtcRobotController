@@ -20,7 +20,7 @@ public class Mecanum
     private final double wheelD = 38; //38mm in inches
     private final double gearRatio = 1;
     private final double ticksToInch = (8192 / (wheelD * Math.PI)) * 0.75;
-    public static boolean fieldOrientated = false;
+    public static boolean fieldOrientated = true;
     private static float tpx, tpy = 0;
 
     public Mecanum(HardwareMap hardwareMap, RevHubOrientationOnRobot.UsbFacingDirection direction, DcMotor.Direction motorDirection)
@@ -47,21 +47,22 @@ public class Mecanum
                 direction));
 
         imu.initialize(parameters);
+        resetMotors();
     }
 
     public void teleop(Gamepad gamepad1, boolean mode)
     {
         double x = -gamepad1.left_stick_x;
-        double y = gamepad1.left_stick_y;
+        double y = -gamepad1.left_stick_y;
         double rotX = gamepad1.right_stick_x; //turning in place
 
         //counteract for imperfect strafing:
         //make x slightly stronger so that you don't have to push the stick as hard
-        /*
+
         x *= 1.1;
         y *= 1.1;
         rotX *= 1.1;
-        */
+
 
         if(gamepad1.options)
         {
@@ -74,23 +75,24 @@ public class Mecanum
             y /= 10;
             rotX /= 10;
         }
-
+/*
         if(gamepad1.shareWasPressed())
         {
             fieldOrientated = !fieldOrientated;
         }
-
+*/
         drive(x, y, -rotX, fieldOrientated);
+
     }
 
     public void setPower(double frontLeftVal, double frontRightVal, double backLeftVal, double backRightVal)
     {
         //dont set frontLeftVal as negative if copying this code for another robot
         //prev: -- -
-        frontLeft.setPower(frontLeftVal * 2);
-        frontRight.setPower(frontRightVal * 2);
-        backLeft.setPower(backLeftVal * 2);
-        backRight.setPower(backRightVal * 2);
+        frontLeft.setPower(frontLeftVal);
+        frontRight.setPower(frontRightVal);
+        backLeft.setPower(backLeftVal);
+        backRight.setPower(backRightVal);
     }
 
     public void drive(double xSpeed, double ySpeed, double rot, boolean fieldOrientated)
@@ -103,20 +105,30 @@ public class Mecanum
             double botDir = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
             //rotate the movement direction counter to the bot's rotation
-            rotX = xSpeed * Math.cos(botDir) - ySpeed * Math.sin(botDir);
-            rotY = xSpeed * Math.sin(botDir) + ySpeed * Math.cos(botDir);
+            double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+
+            // Rotate the movement direction counter to the bot's rotation
+            rotX = xSpeed * Math.cos(-botHeading) + ySpeed * Math.sin(-botHeading);
+            rotY = xSpeed * Math.sin(-botHeading) - ySpeed * Math.cos(-botHeading);
+
 
             //counteract imperfect strafing
-            /*rotX *= 1.1;
-            rotY *= 1.1;*/
+            rotX *= 1.1;
+            rotY *= 1.1;
         }
 
         double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rot), 1);
+        /*
         double frontLeftPower = (-rotX + rotY + rot) / denominator;
         double frontRightPower = (rotX + rotY + rot) / denominator;
         double backLeftPower = (rotX + rotY - rot) / denominator;
         double backRightPower = (-rotX + rotY - rot) / denominator;
+         */
 
+        double frontLeftPower = (rotY + rotX + rot) / denominator;
+        double backLeftPower = (rotY - rotX - rot) / denominator;
+        double frontRightPower = (rotY - rotX + rot) / denominator;
+        double backRightPower = (rotY + rotX - rot) / denominator;
         setPower(frontLeftPower, backLeftPower, frontRightPower, backRightPower);
     }
 

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import static java.lang.StrictMath.round;
+
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -18,6 +20,7 @@ import org.firstinspires.ftc.teamcode.starterbot.StarterBotAuto;
 public class MainAutonomous extends OpMode
 {
     private IMU imu;
+    boolean pulse = false;
     final double FEED_TIME = 0.2;
     final double DRIVE_SPEED = 0.7;
     final double WHEEL_DIAMETER_MM = 96;
@@ -29,8 +32,8 @@ public class MainAutonomous extends OpMode
     private ElapsedTime intakeTimer = new ElapsedTime();
     private ElapsedTime launchTimer = new ElapsedTime();
 
-    private DcMotorEx frontLeft, frontRight, backLeft, backRight, launcherMotorLeft, launcherMotorRight;
-    private DcMotor intakeMotor;
+    private DcMotorEx frontLeft, frontRight, backLeft, backRight, launcherMotorLeft, launcherMotorRight, intakeMotor, transitionMotor;
+
     private CRServo beltLeft, beltRight, beltTopLeft, beltTopRight;
 
     private String alliance = "red";
@@ -64,7 +67,8 @@ public class MainAutonomous extends OpMode
         backRight = hardwareMap.get(DcMotorEx.class, "backRight");
         launcherMotorLeft = hardwareMap.get(DcMotorEx.class, "launcherMotorLeft");
         launcherMotorRight = hardwareMap.get(DcMotorEx.class, "launcherMotorRight");
-        intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
+        intakeMotor = hardwareMap.get(DcMotorEx.class, "intakeMotor");
+        transitionMotor = hardwareMap.get(DcMotorEx.class, "transitionMotor");
         beltLeft = hardwareMap.get(CRServo.class, "beltLeft");
         beltRight = hardwareMap.get(CRServo.class, "beltRight");
         beltTopLeft = hardwareMap.get(CRServo.class, "beltTop");
@@ -84,6 +88,7 @@ public class MainAutonomous extends OpMode
         launcherMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcherMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        transitionMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //set zero power behaviors
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -112,6 +117,8 @@ public class MainAutonomous extends OpMode
         frontRight.setPower(0);
         backLeft.setPower(0);
         backRight.setPower(0);
+        transitionMotor.setPower(0);
+        intakeMotor.setPower(0);
 
         if (gamepad1.circle) {
             alliance = "red";
@@ -142,16 +149,29 @@ public class MainAutonomous extends OpMode
     }
 
     boolean launch(double speed, double time) {
-        launcherMotorLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        launcherMotorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        launcherMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        launcherMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        beltLeft.setPower(-speed);
-        beltRight.setPower(speed);
-        beltTopLeft.setPower(-speed);
-        beltTopRight.setPower(-speed);
+
         launcherMotorRight.setPower(speed);
         launcherMotorLeft.setPower(-speed);
-        intakeMotor.setPower(speed);
+        intakeMotor.setPower(.85);
+        transitionMotor.setPower(-.45);
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        transitionMotor.setPower(0);
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+
+
+
 
         return(launchTimer.seconds() > time);
     }
@@ -181,8 +201,8 @@ public class MainAutonomous extends OpMode
         }
 
         if(warmup) {
-            launcherMotorRight.setPower(.44);
-            launcherMotorLeft.setPower(-.44);
+            launcherMotorRight.setPower(.68);
+            launcherMotorLeft.setPower(-.68);
         }
 
 
@@ -288,7 +308,7 @@ public class MainAutonomous extends OpMode
 
             case LAUNCH:
                 telemetry.addLine("In Launch");
-                if(launch(.44,4)) {
+                if(launch(.69,4)) {
                     telemetry.addLine("drive complete");
                     frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -297,10 +317,7 @@ public class MainAutonomous extends OpMode
                     launcherMotorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     launcherMotorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     intakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    beltTopRight.setPower(0);
-                    beltTopLeft.setPower(0);
-                    beltRight.setPower(0);
-                    beltLeft.setPower(0);
+                    transitionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
                     if(alliance == "blue")
                     {

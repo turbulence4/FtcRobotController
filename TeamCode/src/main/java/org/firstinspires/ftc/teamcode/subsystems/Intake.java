@@ -21,6 +21,8 @@ public class Intake
         beltTopLeft = hardwareMap.get(CRServo.class, "beltTop");
         beltTopRight = hardwareMap.get(CRServo.class, "beltDown");
         transitionMotor = hardwareMap.get(DcMotor.class, "transitionMotor");
+
+        intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public void teleop(Gamepad gamepad)
@@ -28,7 +30,7 @@ public class Intake
         if(gamepad.left_bumper)
         {
             intakeMotor.setPower(0.85);
-            transitionMotor.setPower(-0.35);
+            transitionMotor.setPower(-0.65);
         }
         if(!gamepad.left_bumper && !gamepad.right_bumper) {
             intakeMotor.setPower(0);
@@ -38,13 +40,12 @@ public class Intake
             intakeMotor.setPower(-0.85);
         }
         if(gamepad.right_bumper) {
-            intakeMotor.setPower(-0.85);
             transitionMotor.setPower(0.35);
         }
         //nos button
         if(gamepad.cross) {
             intakeMotor.setPower(0.85);
-            transitionMotor.setPower(-0.5);
+            transitionMotor.setPower(-0.9);
         }
     }
 

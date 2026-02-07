@@ -10,10 +10,11 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 public class Launcher
 {
-    private DcMotor launcherMotor;
+    private DcMotor launcherMotorRight;
+    private DcMotor launcherMotorLeft;
     private String what = "Fuck You John";
     private double powerDifference = 0;
-    private double baseHighPower = 0.79;
+    private double baseHighPower = 0.94;
     private double highPower = baseHighPower;
     public static final double idealVoltage = 13;
     private double currentVoltage = 12.8;
@@ -22,8 +23,11 @@ public class Launcher
 
     public Launcher(HardwareMap hardwareMap)
     {
-        launcherMotor = hardwareMap.get(DcMotor.class, "launcherMotor");
-        launcherMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        launcherMotorRight = hardwareMap.get(DcMotor.class, "launcherMotorRight");
+        launcherMotorRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        launcherMotorLeft = hardwareMap.get(DcMotor.class, "launcherMotorLeft");
+        launcherMotorLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
     }
@@ -34,13 +38,17 @@ public class Launcher
         powerRatio = Math.abs((idealVoltage - currentVoltage) / currentVoltage) + 1;
 
         if(gamepad.triangle) {
-            launcherMotor.setPower((baseHighPower + powerDifference) * powerRatio);
+            launcherMotorRight.setPower((baseHighPower + powerDifference) * powerRatio);
+            launcherMotorLeft.setPower((baseHighPower + powerDifference) * -powerRatio);
         } else if(gamepad.right_trigger > 0.0) {
-            launcherMotor.setPower(0.67 * powerRatio);
+            launcherMotorRight.setPower(0.68 * powerRatio);
+            launcherMotorLeft.setPower(-0.68 * powerRatio);
         } else if(gamepad.circle) {
-            launcherMotor.setPower(1);
+            launcherMotorRight.setPower(1);
+            launcherMotorLeft.setPower(-1);
         } else {
-            launcherMotor.setPower(0);
+            launcherMotorRight.setPower(0);
+            launcherMotorLeft.setPower(0);
         }
 
         if(gamepad.dpadUpWasPressed())
@@ -55,7 +63,7 @@ public class Launcher
 
     public void periodic(Telemetry telemetry)
     {
-        telemetry.addLine("launcherMotor: " + launcherMotor.getPower());
+        telemetry.addLine("launcherMotor: " + launcherMotorRight.getPower());
         telemetry.addLine("high power: " + highPower + "(default: " + baseHighPower + ")");
         telemetry.addLine("power ratio: " + powerRatio);
         telemetry.addLine(what);
