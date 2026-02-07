@@ -308,7 +308,7 @@ public class MainAutonomous extends OpMode
 
             case LAUNCH:
                 telemetry.addLine("In Launch");
-                if(launch(.69,4)) {
+                if(launch(.58,4)) {
                     telemetry.addLine("drive complete");
                     frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -324,7 +324,6 @@ public class MainAutonomous extends OpMode
                         autonomousState = AutonomousState.EXIT_ONE_BLUE;
                     } else if(alliance == "red") {
                         autonomousState = AutonomousState.EXIT_ONE_RED;
-                        //autonomousState = AutonomousState.EXIT_ONE_RED;
                     } else {
                         autonomousState = AutonomousState.COMPLETE;
                     }

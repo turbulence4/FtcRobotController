@@ -37,16 +37,28 @@ public class Launcher
         currentVoltage = voltageSensor.getVoltage();
         powerRatio = Math.abs((idealVoltage - currentVoltage) / currentVoltage) + 1;
 
+        //far
         if(gamepad.triangle) {
             launcherMotorRight.setPower((baseHighPower + powerDifference) * powerRatio);
             launcherMotorLeft.setPower((baseHighPower + powerDifference) * -powerRatio);
-        } else if(gamepad.right_trigger > 0.0) {
-            launcherMotorRight.setPower(0.68 * powerRatio);
-            launcherMotorLeft.setPower(-0.68 * powerRatio);
-        } else if(gamepad.circle) {
+        }
+        //close
+        else if(gamepad.right_trigger > 0.0) {
+            launcherMotorRight.setPower(0.66 * powerRatio);
+            launcherMotorLeft.setPower(-0.66 * powerRatio);
+        }
+        //closer
+        else if(gamepad.cross) {
+            launcherMotorRight.setPower(0.55 * powerRatio);
+            launcherMotorLeft.setPower(-0.55 * powerRatio);
+        }
+        //full power
+        else if(gamepad.circle) {
             launcherMotorRight.setPower(1);
             launcherMotorLeft.setPower(-1);
-        } else {
+        }
+        //off
+        else {
             launcherMotorRight.setPower(0);
             launcherMotorLeft.setPower(0);
         }
