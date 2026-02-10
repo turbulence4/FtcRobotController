@@ -1,4 +1,5 @@
 //password for robot wifi is bttitans
+//if robot is drifting, check orientation of mecanum wheels
 
 package org.firstinspires.ftc.teamcode;
 
